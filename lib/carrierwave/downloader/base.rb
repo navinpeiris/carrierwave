@@ -100,6 +100,10 @@ module CarrierWave
       def skip_ssrf_protection?(uri)
         @uploader.skip_ssrf_protection
       end
+
+      def decode_uri(str)
+        URI::DEFAULT_PARSER.unescape(str)
+      end
     end
   end
 end

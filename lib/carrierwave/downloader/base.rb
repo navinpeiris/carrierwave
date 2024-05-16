@@ -104,6 +104,10 @@ module CarrierWave
       def decode_uri(str)
         URI::DEFAULT_PARSER.unescape(str)
       end
+
+      def encode_non_ascii(str)
+        URI::DEFAULT_PARSER.escape(str, NON_ASCII)
+      end
     end
   end
 end

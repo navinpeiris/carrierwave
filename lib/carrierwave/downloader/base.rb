@@ -8,6 +8,10 @@ module CarrierWave
     class Base
       include CarrierWave::Utilities::Uri
 
+      PATH_SAFE = URI::REGEXP::PATTERN::UNRESERVED + '\/'
+      PATH_UNSAFE = Regexp.new("[^#{PATH_SAFE}]", false)
+      NON_ASCII = /[^[:ascii:]]/.freeze
+
       attr_reader :uploader
 
       def initialize(uploader)
@@ -67,7 +71,7 @@ module CarrierWave
         uri = Addressable::URI.parse(source)
         uri.host = uri.normalized_host
         # Perform decode first, as the path is likely to be already encoded
-        uri.path = encode_path(decode_uri(uri.path)) if uri.path =~ CarrierWave::Utilities::Uri::PATH_UNSAFE
+        uri.path = encode_path(decode_uri(uri.path)) if uri.path =~ PATH_UNSAFE
         uri.query = encode_non_ascii(uri.query) if uri.query
         uri.fragment = encode_non_ascii(uri.fragment) if uri.fragment
         URI.parse(uri.to_s)
@@ -95,6 +99,14 @@ module CarrierWave
       #
       def skip_ssrf_protection?(uri)
         false
+      end
+
+      def decode_uri(str)
+        URI::DEFAULT_PARSER.unescape(str)
+      end
+
+      def encode_non_ascii(str)
+        URI::DEFAULT_PARSER.escape(str, NON_ASCII)
       end
     end
   end
